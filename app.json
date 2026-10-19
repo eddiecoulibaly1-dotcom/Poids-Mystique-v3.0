@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "android": {
       "package": "com.poidsmystique.app",
       "adaptiveIcon": {
@@ -14,14 +15,23 @@
       "versionCode": 3,
       "permissions": []
     },
+
     "assetBundlePatterns": [
       "assets/corpus/*"
     ],
+
     "icon": "./assets/icon.png",
+
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#f7f3e8"
+    },
+
+    "extra": {
+      "eas": {
+        "projectId": "63ee33c5-389b-4631-9182-be36988e6a23"
+      }
     }
   }
 }
