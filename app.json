@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Poids Mystique",
+    "slug": "poids-mystique",
+    "version": "3.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.poidsmystique.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D2A22"
+      },
+      "versionCode": 3,
+      "permissions": []
+    },
+    "assetBundlePatterns": [
+      "assets/corpus/*"
+    ],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f3e8"
+    }
+  }
+}
