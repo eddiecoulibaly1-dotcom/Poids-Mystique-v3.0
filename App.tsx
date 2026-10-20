@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
@@ -11,16 +11,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {StatusBar} from 'expo-status-bar';
+import { StatusBar } from 'expo-status-bar';
 
 import {
+  ABJAD_MAGHREBI,
   calculateAbjad,
   DEFAULT_NORMALIZATION,
+  ELEMENT_BY_LETTER,
   ELEMENT_ICONS,
   ElementName,
   NormalizationSettings,
-  ABJAD_MAGHREBI,
-  ELEMENT_BY_LETTER,
 } from './src/abjad';
 
 import {
@@ -33,9 +33,9 @@ import {
   toggleFavorite,
 } from './src/storage';
 
-import {CORPUS} from './src/corpus';
-import {CORPUS_PAGES} from './src/assets/corpusPages';
-import {getFrenchTranslation} from './src/assets/frenchTranslations';
+import { CORPUS } from './src/corpus';
+import { CORPUS_PAGES } from './src/assets/corpusPages';
+import { getFrenchTranslation } from './src/assets/frenchTranslations';
 
 type Tab = 'calcul' | 'corpus' | 'methode' | 'historique';
 
@@ -45,12 +45,9 @@ type SourceRef = {
   page?: number | null;
 };
 
-const ELEMENT_NAMES: ElementName[] = [
-  'Feu',
-  'Terre',
-  'Air',
-  'Eau',
-];
+/* =========================================================
+   APP
+========================================================= */
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('calcul');
@@ -66,18 +63,21 @@ export default function App() {
   );
 
   useEffect(() => {
-    (async () => {
-      const savedSettings = await loadSettings();
+    async function initialize() {
+      const storedSettings = await loadSettings();
 
-      if (savedSettings) {
+      if (storedSettings) {
         setSettings({
           ...DEFAULT_NORMALIZATION,
-          ...savedSettings,
+          ...storedSettings,
         });
       }
 
-      setHistory(await loadHistory());
-    })();
+      const storedHistory = await loadHistory();
+      setHistory(storedHistory);
+    }
+
+    initialize();
   }, []);
 
   async function calculateAndSave(
@@ -100,7 +100,9 @@ export default function App() {
 
     await saveHistory(item);
 
-    setHistory(await loadHistory());
+    const updatedHistory = await loadHistory();
+
+    setHistory(updatedHistory);
     setText(input);
     setSource(sourceRef);
     setTab('calcul');
@@ -119,7 +121,7 @@ export default function App() {
     await saveSettings(nextSettings);
   }
 
-  async function clearHistory() {
+  function clearHistory() {
     if (!history.length) {
       return;
     }
@@ -177,9 +179,7 @@ export default function App() {
             }}
             result={result}
             source={source}
-            calculateAndSave={() =>
-              calculateAndSave(text, source)
-            }
+            calculateAndSave={() => calculateAndSave(text, source)}
           />
         )}
 
@@ -206,55 +206,92 @@ export default function App() {
               setSource(item.source);
               setTab('calcul');
             }}
-            onFavorite={async (id) =>
-              setHistory(await toggleFavorite(id))
-            }
+            onFavorite={async (id) => {
+              const updated = await toggleFavorite(id);
+              setHistory(updated);
+            }}
             onClear={clearHistory}
           />
         )}
       </ScrollView>
 
       <View style={styles.nav}>
-        {(
-          [
-            ['calcul', '⌁', 'Calcul'],
-            ['corpus', '▤', 'Corpus'],
-            ['methode', '☷', 'Méthode'],
-            ['historique', '◷', 'Historique'],
-          ] as const
-        ).map(([key, icon, label]) => (
-          <TouchableOpacity
-            key={key}
-            onPress={() => setTab(key)}
-            style={styles.navItem}
-            accessibilityRole="button"
-          >
-            <Text
-              style={[
-                styles.navIcon,
-                tab === key && styles.navActive,
-              ]}
-            >
-              {icon}
-            </Text>
+        <NavItem
+          active={tab === 'calcul'}
+          icon="⌁"
+          label="Calcul"
+          onPress={() => setTab('calcul')}
+        />
 
-            <Text
-              style={[
-                styles.navText,
-                tab === key && styles.navActive,
-              ]}
-            >
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <NavItem
+          active={tab === 'corpus'}
+          icon="▤"
+          label="Corpus"
+          onPress={() => setTab('corpus')}
+        />
+
+        <NavItem
+          active={tab === 'methode'}
+          icon="☷"
+          label="Méthode"
+          onPress={() => setTab('methode')}
+        />
+
+        <NavItem
+          active={tab === 'historique'}
+          icon="◷"
+          label="Historique"
+          onPress={() => setTab('historique')}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
 /* =========================================================
-   CALCULATEUR
+   NAVIGATION
+========================================================= */
+
+function NavItem({
+  active,
+  icon,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  icon: string;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.navItem}
+      accessibilityRole="button"
+    >
+      <Text
+        style={[
+          styles.navIcon,
+          active && styles.navActive,
+        ]}
+      >
+        {icon}
+      </Text>
+
+      <Text
+        style={[
+          styles.navText,
+          active && styles.navActive,
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+/* =========================================================
+   CALCULATOR
 ========================================================= */
 
 function Calculator({
@@ -270,6 +307,31 @@ function Calculator({
   source?: SourceRef;
   calculateAndSave: () => void;
 }) {
+  const max = Math.max(result.total, 1);
+
+  function shareResult() {
+    const sourceLine = source
+      ? `Source : ${source.title}${
+          source.page ? ` — page ${source.page}` : ''
+        }`
+      : '';
+
+    const message = [
+      'Poids Mystique — Abjad Maghrebi',
+      `Texte : ${result.normalized || text}`,
+      `Total : ${result.total}`,
+      `🔥 Feu : ${result.counts.Feu}`,
+      `🌱 Terre : ${result.counts.Terre}`,
+      `💨 Air : ${result.counts.Air}`,
+      `💧 Eau : ${result.counts.Eau}`,
+      sourceLine,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    Share.share({ message });
+  }
+
   return (
     <>
       <Card>
@@ -323,28 +385,7 @@ function Calculator({
 
         <TouchableOpacity
           style={styles.secondaryButton}
-          onPress={() =>
-            Share.share({
-              message: [
-                'Poids Mystique — Abjad Maghrebi',
-                `Texte : ${result.normalized || text}`,
-                `Total : ${result.total}`,
-                `🔥 Feu : ${result.counts.Feu}`,
-                `🌱 Terre : ${result.counts.Terre}`,
-                `💨 Air : ${result.counts.Air}`,
-                `💧 Eau : ${result.counts.Eau}`,
-                source
-                  ? `Source : ${source.title}${
-                      source.page
-                        ? ` — page ${source.page}`
-                        : ''
-                    }`
-                  : '',
-              ]
-                .filter(Boolean)
-                .join('\n'),
-            })
-          }
+          onPress={shareResult}
         >
           <Text style={styles.secondaryButtonText}>
             Partager le résultat
@@ -359,7 +400,25 @@ function Calculator({
         )}
       </Card>
 
-      <ElementDistribution result={result} />
+      <Card>
+        <Text style={styles.h2}>
+          Répartition élémentale
+        </Text>
+
+        <View>
+          {(['Feu', 'Terre', 'Air', 'Eau'] as ElementName[]).map(
+            (element) => (
+              <ElementRow
+                key={element}
+                element={element}
+                value={result.counts[element]}
+                total={result.total}
+                max={max}
+              />
+            )
+          )}
+        </View>
+      </Card>
 
       <Card>
         <Text style={styles.h2}>
@@ -382,8 +441,7 @@ function Calculator({
                 </Text>
 
                 <Text style={styles.small}>
-                  {item.value} ·{' '}
-                  {ELEMENT_ICONS[item.element]}
+                  {item.value} · {ELEMENT_ICONS[item.element]}
                 </Text>
               </View>
             ))}
@@ -395,70 +453,58 @@ function Calculator({
 }
 
 /* =========================================================
-   RÉPARTITION ÉLÉMENTALE
+   ELEMENT ROW
 ========================================================= */
 
-function ElementDistribution({
-  result,
+function ElementRow({
+  element,
+  value,
+  total,
+  max,
 }: {
-  result: ReturnType<typeof calculateAbjad>;
+  element: ElementName;
+  value: number;
+  total: number;
+  max: number;
 }) {
-  const max = Math.max(result.total, 1);
+  const percentage =
+    total > 0
+      ? Math.round((value / total) * 100)
+      : 0;
+
+  const widthPercentage = Math.min(
+    100,
+    (value / max) * 100
+  );
 
   return (
-    <Card>
-      <Text style={styles.h2}>
-        Répartition élémentale
-      </Text>
+    <View style={styles.elementBlock}>
+      <View style={styles.row}>
+        <Text style={styles.rowLabel}>
+          {ELEMENT_ICONS[element]} {element}
+        </Text>
 
-      {ELEMENT_NAMES.map((element) => {
-        const number = result.counts[element];
+        <Text style={styles.value}>
+          {value} · {percentage}%
+        </Text>
+      </View>
 
-        const percentage = result.total
-          ? Math.round(
-              (number / result.total) * 100
-            )
-          : 0;
-
-        const barPercentage = Math.min(
-          100,
-          (number / max) * 100
-        );
-
-        return (
-          <View
-            key={element}
-            style={styles.elementBlock}
-          >
-            <View style={styles.row}>
-              <Text style={styles.rowLabel}>
-                {ELEMENT_ICONS[element]} {element}
-              </Text>
-
-              <Text style={styles.value}>
-                {number} · {percentage}%
-              </Text>
-            </View>
-
-            <View style={styles.bar}>
-              <View
-                style={[
-                  styles.barFill,
-                  {
-                    width: `${barPercentage}%`,
-                  },
-                ]}
-              />
-            </View>
-          </View>
-        );
-      })}
-    </Card>
+      <View style={styles.bar}>
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: `${widthPercentage}%`,
+            },
+          ]}
+        />
+      </View>
+    </View>
   );
 }
 
 /* =========================================================
-   SOURCE
+   SOURCE CHIP
 ========================================================= */
 
 function SourceChip({
@@ -472,7 +518,7 @@ function SourceChip({
         ◈
       </Text>
 
-      <View style={{flex: 1}}>
+      <View style={styles.sourceChipBody}>
         <Text style={styles.sourceChipTitle}>
           {source.title}
         </Text>
@@ -512,12 +558,13 @@ function Corpus({
   const [passage, setPassage] =
     useState<string>('');
 
-  const book = CORPUS.find(
-    (item) => item.id === selected
-  )!;
+  const book =
+    CORPUS.find(
+      (item) => item.id === selected
+    ) || available[0];
 
   const currentPage = Math.min(
-    book.pages ?? 1,
+    book?.pages ?? 1,
     Math.max(1, Number(page) || 1)
   );
 
@@ -532,11 +579,8 @@ function Corpus({
 
   function changePage(delta: number) {
     const nextPage = Math.min(
-      book.pages ?? 1,
-      Math.max(
-        1,
-        currentPage + delta
-      )
+      book?.pages ?? 1,
+      Math.max(1, currentPage + delta)
     );
 
     setPage(String(nextPage));
@@ -547,6 +591,20 @@ function Corpus({
     setSelected(id);
     setPage('1');
     setPassage('');
+  }
+
+  if (!book) {
+    return (
+      <Card>
+        <Text style={styles.h2}>
+          Corpus
+        </Text>
+
+        <Text style={styles.note}>
+          Aucun document disponible.
+        </Text>
+      </Card>
+    );
   }
 
   return (
@@ -561,10 +619,11 @@ function Corpus({
         </Text>
 
         <Text style={styles.note}>
-          Les deux documents fournis sont conservés
-          comme pages arabes. La seule couche textuelle
-          ajoutée est la traduction française lorsqu’elle
-          est validée. Aucun autre texte de transcription
+          Les documents fournis sont conservés
+          comme pages arabes. La seule couche
+          textuelle ajoutée est la traduction
+          française lorsqu’elle est validée.
+          Aucun autre texte de transcription
           n’est conservé.
         </Text>
 
@@ -634,12 +693,18 @@ function Corpus({
         </Text>
 
         <View style={styles.pdfFrame}>
-          {pageImage && (
+          {pageImage ? (
             <Image
               source={pageImage}
               style={styles.pdfImage}
               resizeMode="contain"
             />
+          ) : (
+            <View style={styles.emptyPage}>
+              <Text style={styles.note}>
+                Page non disponible.
+              </Text>
+            </View>
           )}
         </View>
 
@@ -717,9 +782,7 @@ function Corpus({
           </View>
         ) : (
           <View
-            style={
-              styles.translationPending
-            }
+            style={styles.translationPending}
           >
             <Text style={styles.translationTitle}>
               Traduction française
@@ -749,10 +812,11 @@ function Corpus({
         />
 
         <Text style={styles.note}>
-          Saisissez manuellement le passage arabe
-          visible sur cette page. Le texte saisi sert
-          uniquement au calcul et la référence du
-          livre/page est enregistrée avec le résultat.
+          Saisissez manuellement le passage
+          arabe visible sur cette page. Le
+          texte saisi sert uniquement au calcul
+          et la référence du livre/page est
+          enregistrée avec le résultat.
         </Text>
 
         <TextInput
@@ -790,7 +854,7 @@ function Corpus({
 }
 
 /* =========================================================
-   MÉTHODE
+   METHOD
 ========================================================= */
 
 function Method({
@@ -805,6 +869,16 @@ function Method({
     value: boolean
   ) => Promise<void>;
 }) {
+  const elementLetters: Record<
+    ElementName,
+    string
+  > = {
+    Feu: 'ا ه ط م ف س ذ',
+    Terre: 'ب و ي ن ض ت ظ',
+    Air: 'ج ز ك ص ق ث غ',
+    Eau: 'د ح ل ع ر خ ش',
+  };
+
   const normalizationOptions: Array<
     [
       keyof NormalizationSettings,
@@ -845,38 +919,39 @@ function Method({
         </Text>
 
         <Text style={styles.note}>
-          Référence fixe de l’application. Les
-          valeurs ci-dessous ne sont pas remplacées
-          par un autre système.
+          Référence fixe de l’application.
+          Les valeurs ci-dessous ne sont pas
+          remplacées par un autre système.
         </Text>
 
         <View style={styles.grid}>
           {Object.entries(
             ABJAD_MAGHREBI
-          ).map(([letter, value]) => (
-            <View
-              style={styles.cell}
-              key={letter}
-            >
-              <Text style={styles.big}>
-                {letter}
-              </Text>
+          ).map(([letter, value]) => {
+            const element =
+              ELEMENT_BY_LETTER[letter];
 
-              <Text style={styles.cellValue}>
-                {value}
-              </Text>
+            return (
+              <View
+                style={styles.cell}
+                key={letter}
+              >
+                <Text style={styles.big}>
+                  {letter}
+                </Text>
 
-              <Text style={styles.tiny}>
-                {
-                  ELEMENT_ICONS[
-                    ELEMENT_BY_LETTER[
-                      letter
-                    ]!
-                  ]
-                }
-              </Text>
-            </View>
-          ))}
+                <Text style={styles.cellValue}>
+                  {value}
+                </Text>
+
+                <Text style={styles.tiny}>
+                  {element
+                    ? ELEMENT_ICONS[element]
+                    : ''}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       </Card>
 
@@ -885,43 +960,22 @@ function Method({
           Éléments
         </Text>
 
-        {ELEMENT_NAMES.map((element) => {
-          let letters = '';
+        {(
+          ['Feu', 'Terre', 'Air', 'Eau'] as ElementName[]
+        ).map((element) => (
+          <View
+            key={element}
+            style={styles.row}
+          >
+            <Text style={styles.rowLabel}>
+              {ELEMENT_ICONS[element]} {element}
+            </Text>
 
-          if (element === 'Feu') {
-            letters =
-              'ا ه ط م ف س ذ';
-          } else if (
-            element === 'Terre'
-          ) {
-            letters =
-              'ب و ي ن ض ت ظ';
-          } else if (
-            element === 'Air'
-          ) {
-            letters =
-              'ج ز ك ص ق ث غ';
-          } else {
-            letters =
-              'د ح ل ع ر خ ش';
-          }
-
-          return (
-            <View
-              key={element}
-              style={styles.row}
-            >
-              <Text style={styles.rowLabel}>
-                {ELEMENT_ICONS[element]}{' '}
-                {element}
-              </Text>
-
-              <Text style={styles.value}>
-                {letters}
-              </Text>
-            </View>
-          );
-        })}
+            <Text style={styles.value}>
+              {elementLetters[element]}
+            </Text>
+          </View>
+        ))}
       </Card>
 
       <Card>
@@ -932,7 +986,7 @@ function Method({
         {normalizationOptions.map(
           ([key, label]) => (
             <TouchableOpacity
-              key={String(key)}
+              key={key}
               style={styles.setting}
               onPress={() =>
                 updateSetting(
@@ -961,11 +1015,12 @@ function Method({
         </Text>
 
         <Text style={styles.note}>
-          Le calcul Abjad est présenté comme un
-          résultat numérique transparent. Aucune
-          règle de « Poids Mystique » dérivée
-          n’est inventée dans le moteur tant
-          qu’elle n’a pas été définie explicitement.
+          Le calcul Abjad est présenté comme
+          un résultat numérique transparent.
+          Aucune règle de « Poids Mystique »
+          dérivée n’est inventée dans le moteur
+          tant qu’elle n’a pas été définie
+          explicitement.
         </Text>
       </Card>
     </>
@@ -973,7 +1028,7 @@ function Method({
 }
 
 /* =========================================================
-   HISTORIQUE
+   HISTORY
 ========================================================= */
 
 function History({
@@ -987,8 +1042,10 @@ function History({
   onFavorite: (id: string) => void;
   onClear: () => void;
 }) {
-  const [favoritesOnly, setFavoritesOnly] =
-    useState(false);
+  const [
+    favoritesOnly,
+    setFavoritesOnly,
+  ] = useState(false);
 
   const shown = favoritesOnly
     ? history.filter(
@@ -1052,7 +1109,7 @@ function History({
             style={styles.history}
           >
             <TouchableOpacity
-              style={{flex: 1}}
+              style={styles.historyMain}
               onPress={() =>
                 onSelect(item)
               }
@@ -1087,9 +1144,7 @@ function History({
               style={styles.favorite}
             >
               <Text
-                style={
-                  styles.favoriteText
-                }
+                style={styles.favoriteText}
               >
                 {item.favorite
                   ? '★'
@@ -1256,16 +1311,17 @@ const styles = StyleSheet.create({
   },
 
   secondaryButton: {
-    marginTop: 14,
+    backgroundColor: '#f5f0e3',
     padding: 13,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#b88b35',
     alignItems: 'center',
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: '#e3d7bd',
   },
 
   secondaryButtonText: {
-    color: '#7d6029',
+    color: '#0b5747',
     fontWeight: '800',
   },
 
@@ -1291,7 +1347,7 @@ const styles = StyleSheet.create({
   },
 
   elementBlock: {
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   bar: {
@@ -1336,11 +1392,9 @@ const styles = StyleSheet.create({
     color: '#78847d',
   },
 
-  smallTitle: {
-    color: '#124f43',
-    fontSize: 14,
-    fontWeight: '800',
-    marginBottom: 6,
+  note: {
+    color: '#68776f',
+    lineHeight: 21,
   },
 
   corpus: {
@@ -1380,6 +1434,13 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee7d7',
+  },
+
+  smallTitle: {
+    color: '#124f43',
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 6,
   },
 
   planned: {
@@ -1440,6 +1501,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  historyMain: {
+    flex: 1,
+  },
+
   pdfFrame: {
     height: 460,
     marginTop: 14,
@@ -1453,6 +1518,12 @@ const styles = StyleSheet.create({
   pdfImage: {
     width: '100%',
     height: '100%',
+  },
+
+  emptyPage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   sourceLine: {
@@ -1581,6 +1652,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
+  sourceChipBody: {
+    flex: 1,
+  },
+
   sourceChipTitle: {
     color: '#124f43',
     fontWeight: '800',
@@ -1652,10 +1727,5 @@ const styles = StyleSheet.create({
   navActive: {
     color: '#0b5747',
     fontWeight: '800',
-  },
-
-  note: {
-    color: '#68776f',
-    lineHeight: 21,
   },
 });
