@@ -1,44 +1,33 @@
-# Poids Mystique — v3.0.0 Release Candidate
+# Poids Mystique — version indépendante
 
-Application React Native + Expo autonome, hors Lovable.
+Application React Native + Expo, sans Lovable.
 
-## Fonctionnalités
-- Abjad Maghrebi exclusivement.
-- Valeurs et classification élémentale verrouillées.
-- Calcul brut, détail lettre par lettre et répartition élémentale.
-- Normalisation arabe configurable.
-- Corpus arabe + français pour Livre Barhout et Les Noms d’Idris.
-- 34 pages Barhout et 66 pages Idris, sous forme d’images de pages arabes.
-- Traduction française affichée uniquement lorsqu’elle est validée.
-- Aucune translittération, transcription latine/turque ou OCR affiché dans le corpus.
-- Référence livre/page attachée aux calculs.
-- Historique et favoris locaux.
-- Partage du résultat.
-- Interface crème, vert profond et or.
-- Emplacements préparés pour Coran, Dalā’il al-Khayrāt et Al-Burda sans contenu non autorisé.
+## Règle de calcul officielle
+
+Le moteur utilise exclusivement les valeurs d'Abjad maghrébin définies dans `src/abjad.ts`.
+Aucune valeur d'Abjad mashriqi/oriental n'est utilisée.
+
+## Corpus actuellement embarqué
+
+- Livre Barhout — 34 pages
+- Les Noms Idrīsiyya — 66 pages
+
+Les pages sont embarquées sous `src/asset/corpus/` et référencées exclusivement depuis `src/asset/corpusPages.ts`. Il n'existe volontairement aucun chemin `src/asset/assets/...`.
+
+## Traductions françaises
+
+Les PDF fournis ne contiennent pas de traduction française vérifiée. Le projet ne fabrique donc pas de traduction religieuse. `src/asset/frenchTranslations.ts` est prêt à recevoir des traductions françaises vérifiées page par page.
 
 ## Vérification
+
 ```bash
 npm install
-npm run validate:release
+npm run typecheck
+npm run test:engine
 ```
 
-Le test de référence est `محمد = 92` : Feu 80, Eau 12, Terre 0, Air 0.
+Build Android preview :
 
-## Lancer
 ```bash
-npm start
+eas build --platform android --profile preview
 ```
-
-## Android
-Pour un APK de test avec EAS :
-```bash
-npx eas build --platform android --profile preview
-```
-
-Pour Google Play (AAB) :
-```bash
-npx eas build --platform android --profile production
-```
-
-Un compte Expo/EAS et une connexion réseau sont nécessaires pour ces builds distants.
