@@ -34,8 +34,8 @@ import {
 } from './src/storage';
 
 import { CORPUS } from './src/corpus';
-import { CORPUS_PAGES } from './src/assets/corpusPages';
-import { getFrenchTranslation } from './src/assets/frenchTranslations';
+import { CORPUS_PAGES } from './src/asset/corpusPages';
+import { getFrenchTranslation } from './src/asset/frenchTranslations';
 
 type Tab = 'calcul' | 'corpus' | 'methode' | 'historique';
 
@@ -44,10 +44,6 @@ type SourceRef = {
   title: string;
   page?: number | null;
 };
-
-/* =========================================================
-   APP
-========================================================= */
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('calcul');
@@ -248,10 +244,6 @@ export default function App() {
   );
 }
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
 function NavItem({
   active,
   icon,
@@ -289,10 +281,6 @@ function NavItem({
     </TouchableOpacity>
   );
 }
-
-/* =========================================================
-   CALCULATOR
-========================================================= */
 
 function Calculator({
   text,
@@ -452,10 +440,6 @@ function Calculator({
   );
 }
 
-/* =========================================================
-   ELEMENT ROW
-========================================================= */
-
 function ElementRow({
   element,
   value,
@@ -503,10 +487,6 @@ function ElementRow({
   );
 }
 
-/* =========================================================
-   SOURCE CHIP
-========================================================= */
-
 function SourceChip({
   source,
 }: {
@@ -532,10 +512,6 @@ function SourceChip({
     </View>
   );
 }
-
-/* =========================================================
-   CORPUS
-========================================================= */
 
 function Corpus({
   onCalculate,
@@ -853,10 +829,6 @@ function Corpus({
   );
 }
 
-/* =========================================================
-   METHOD
-========================================================= */
-
 function Method({
   settings,
   updateSetting,
@@ -1027,10 +999,6 @@ function Method({
   );
 }
 
-/* =========================================================
-   HISTORY
-========================================================= */
-
 function History({
   history,
   onSelect,
@@ -1158,10 +1126,6 @@ function History({
   );
 }
 
-/* =========================================================
-   CARD
-========================================================= */
-
 function Card({
   children,
 }: {
@@ -1173,10 +1137,6 @@ function Card({
     </View>
   );
 }
-
-/* =========================================================
-   STYLES
-========================================================= */
 
 const styles = StyleSheet.create({
   safe: {
