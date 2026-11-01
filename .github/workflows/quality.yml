@@ -1,0 +1,29 @@
+name: Quality checks
+
+on:
+  push:
+    branches:
+      - main
+      - "improvement/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: TypeScript and Abjad tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Abjad engine tests
+        run: npm run test:engine
