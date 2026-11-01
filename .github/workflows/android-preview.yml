@@ -24,6 +24,9 @@ concurrency:
   group: android-preview-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build-preview:
     name: Verify and build Android preview APK
@@ -33,21 +36,45 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref || github.ref_name }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Install dependencies
         run: npm install
+
       - name: TypeScript check
         run: npm run typecheck
+
       - name: Abjad engine tests
         run: npm run test:engine
+
       - name: Export Android JavaScript bundle
         run: npx expo export --platform android
+
       - name: Install EAS CLI
         run: npm install --global eas-cli
+
       - name: Build preview APK with EAS
-        run: eas build --platform android --profile preview --non-interactive
+        run: eas build --platform android --profile preview --non-interactive --json > eas-build.json
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download generated APK
+        shell: bash
+        run: |
+          BUILD_ID="$(node -e "const d=require('./eas-build.json'); const all=Array.isArray(d)?d:(d.builds||[d]); const b=all.find(x=>x.id)||all[0]; if(!b?.id) process.exit(2); process.stdout.write(b.id)")"
+          mkdir -p artifacts
+          eas build:download --id "$BUILD_ID" --path artifacts/poids-mystique-preview.apk
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Publish APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: poids-mystique-preview-apk
+          path: artifacts/poids-mystique-preview.apk
+          if-no-files-found: error
+          retention-days: 14
