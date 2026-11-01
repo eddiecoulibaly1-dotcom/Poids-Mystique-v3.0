@@ -114,8 +114,10 @@ function Corpus({ onBack }: { onBack: () => void }) {
   const [selected, setSelected] = useState(CORPUS[0].id);
   const book = CORPUS.find(b => b.id === selected)!;
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'original' | 'french'>('original');
   const pageImage = CORPUS_PAGES[selected]?.[page];
   const french = getFrenchTranslation(selected, page);
+  const hasFrench = Boolean(french);
 
   useEffect(() => { setPage(1); }, [selected]);
 
@@ -125,7 +127,8 @@ function Corpus({ onBack }: { onBack: () => void }) {
       <View style={styles.bookTabs}>{CORPUS.map(b => <Pressable key={b.id} onPress={() => setSelected(b.id)} style={[styles.bookTab, selected === b.id && styles.bookTabActive]}><Text style={[styles.bookTabText, selected === b.id && styles.bookTabTextActive]}>{b.title}</Text></Pressable>)}</View>
       <Text style={styles.subtitle}>{book.subtitle}</Text>
       <Card>
-        {pageImage ? <Image source={pageImage} style={styles.pageImage} resizeMode="contain" /> : <View style={styles.missingBook}><Text style={styles.missingBookTitle}>{book.available ? 'Page non disponible' : 'Document à intégrer'}</Text><Text style={styles.muted}>{book.source}</Text>{book.pages ? <Text style={styles.muted}>{book.pages} pages identifiées, en attente de transfert dans cette application.</Text> : null}</View>}
+        {selected === 'barhout' ? <View style={styles.modeSwitch}><Pressable onPress={() => setViewMode('original')} style={[styles.modeButton, viewMode === 'original' && styles.modeButtonActive]}><Text style={[styles.modeButtonText, viewMode === 'original' && styles.modeButtonTextActive]}>Original</Text></Pressable><Pressable disabled={!hasFrench} onPress={() => setViewMode('french')} style={[styles.modeButton, viewMode === 'french' && styles.modeButtonActive, !hasFrench && styles.modeButtonDisabled]}><Text style={[styles.modeButtonText, viewMode === 'french' && styles.modeButtonTextActive]}>{hasFrench ? 'Français' : 'Français indisponible'}</Text></Pressable></View> : null}
+        {selected === 'barhout' && viewMode === 'french' && french ? <View style={styles.frenchPage}><Text style={styles.translation}>{french}</Text></View> : pageImage ? <Image source={pageImage} style={styles.pageImage} resizeMode="contain" /> : <View style={styles.missingBook}><Text style={styles.missingBookTitle}>{book.available ? 'Page non disponible' : 'Document à intégrer'}</Text><Text style={styles.muted}>{book.source}</Text>{book.pages ? <Text style={styles.muted}>{book.pages} pages identifiées, en attente de transfert dans cette application.</Text> : null}</View>}
         {book.available ? <><View style={styles.pageNav}>
           <Pressable disabled={page <= 1} onPress={() => setPage(p => Math.max(1, p - 1))} style={[styles.navButton, page <= 1 && styles.disabled]}><Text style={styles.navText}>‹</Text></Pressable>
           <Text style={styles.pageNumber}>Page {page} / {book.pages}</Text>
@@ -133,10 +136,10 @@ function Corpus({ onBack }: { onBack: () => void }) {
         </View>
         <TextInput value={String(page)} onChangeText={v => { const n = Number(v.replace(/\D/g, '')); if (n >= 1 && n <= (book.pages ?? 1)) setPage(n); }} keyboardType="number-pad" style={styles.pageInput} /></> : null}
       </Card>
-      <Card>
+      {selected !== 'barhout' ? <Card>
         <Text style={styles.cardTitle}>Traduction française</Text>
         <Text style={styles.translation}>{french ?? 'Aucune traduction française vérifiée n’est embarquée pour cette page. Le texte source est conservé sans transcription ni traduction inventée.'}</Text>
-      </Card>
+      </Card> : <Text style={styles.muted}>Traduction française du texte turc de l’édition fournie. Le document original reste consultable à tout moment.</Text>}
     </ScrollView>
   );
 }
@@ -210,6 +213,13 @@ const styles = StyleSheet.create({
   bookTabActive: { backgroundColor: GREEN, borderColor: GREEN },
   bookTabText: { color: GREEN, fontWeight: '700', fontSize: 12 },
   bookTabTextActive: { color: '#FFFDF7' },
+  modeSwitch: { flexDirection: 'row', backgroundColor: '#F0ECE3', borderRadius: 12, padding: 4, marginBottom: 12, gap: 6 },
+  modeButton: { flex: 1, paddingVertical: 10, borderRadius: 9, alignItems: 'center' },
+  modeButtonActive: { backgroundColor: GREEN },
+  modeButtonDisabled: { opacity: 0.45 },
+  modeButtonText: { color: GREEN, fontWeight: '800', fontSize: 13 },
+  modeButtonTextActive: { color: '#FFFDF7' },
+  frenchPage: { minHeight: 300, padding: 16, backgroundColor: '#F0ECE3', borderRadius: 12, justifyContent: 'center' },
   pageImage: { width: '100%', height: 560, backgroundColor: '#F0ECE3' },
   missingBook: { minHeight: 250, padding: 22, backgroundColor: '#F0ECE3', borderRadius: 12, justifyContent: 'center', gap: 12 },
   missingBookTitle: { color: GREEN, fontSize: 18, fontWeight: '800' },
