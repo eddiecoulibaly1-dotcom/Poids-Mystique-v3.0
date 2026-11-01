@@ -98,8 +98,7 @@ function Calculator({ onSaved }: { onSaved: () => void }) {
 }
 
 function Corpus({ onBack }: { onBack: () => void }) {
-  const available = CORPUS.filter(b => b.available);
-  const [selected, setSelected] = useState(available[0]?.id ?? 'barhout');
+  const [selected, setSelected] = useState(CORPUS[0].id);
   const book = CORPUS.find(b => b.id === selected)!;
   const [page, setPage] = useState(1);
   const pageImage = CORPUS_PAGES[selected]?.[page];
@@ -110,7 +109,7 @@ function Corpus({ onBack }: { onBack: () => void }) {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Header title="Corpus" onBack={onBack} />
-      <View style={styles.bookTabs}>{available.map(b => <Pressable key={b.id} onPress={() => setSelected(b.id)} style={[styles.bookTab, selected === b.id && styles.bookTabActive]}><Text style={[styles.bookTabText, selected === b.id && styles.bookTabTextActive]}>{b.title}</Text></Pressable>)}</View>
+      <View style={styles.bookTabs}>{CORPUS.map(b => <Pressable key={b.id} onPress={() => setSelected(b.id)} style={[styles.bookTab, selected === b.id && styles.bookTabActive]}><Text style={[styles.bookTabText, selected === b.id && styles.bookTabTextActive]}>{b.title}</Text></Pressable>)}</View>
       <Text style={styles.subtitle}>{book.subtitle}</Text>
       <Card>
         {pageImage ? <Image source={pageImage} style={styles.pageImage} resizeMode="contain" /> : <Text style={styles.muted}>Page indisponible.</Text>}
@@ -186,12 +185,14 @@ const styles = StyleSheet.create({
   elementValue: { color: GREEN, fontWeight: '800' },
   letterLine: { color: TEXT, fontSize: 17, paddingVertical: 5, textAlign: 'right' },
   muted: { color: '#77766F', lineHeight: 20 },
-  bookTabs: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  bookTab: { flex: 1, paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: '#D9D0BF', alignItems: 'center' },
+  bookTabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  bookTab: { flexGrow: 1, flexBasis: '47%', paddingHorizontal: 8, paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: '#D9D0BF', alignItems: 'center' },
   bookTabActive: { backgroundColor: GREEN, borderColor: GREEN },
   bookTabText: { color: GREEN, fontWeight: '700', fontSize: 12 },
   bookTabTextActive: { color: '#FFFDF7' },
   pageImage: { width: '100%', height: 560, backgroundColor: '#F0ECE3' },
+  missingBook: { minHeight: 250, padding: 22, backgroundColor: '#F0ECE3', borderRadius: 12, justifyContent: 'center', gap: 12 },
+  missingBookTitle: { color: GREEN, fontSize: 18, fontWeight: '800' },
   pageNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
   navButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
   navText: { color: '#FFFDF7', fontSize: 28, marginTop: -3 },
