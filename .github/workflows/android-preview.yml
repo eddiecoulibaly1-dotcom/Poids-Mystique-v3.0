@@ -1,0 +1,32 @@
+name: Android preview APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branche à compiler"
+        required: true
+        default: "improvement/v0.3-audit"
+        type: string
+
+jobs:
+  build-preview:
+    name: Build Android preview APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install EAS CLI
+        run: npm install --global eas-cli
+      - name: Build preview APK with EAS
+        run: eas build --platform android --profile preview --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
