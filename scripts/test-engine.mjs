@@ -49,4 +49,11 @@ assert.equal(calc('مُحَمَّد').total,92);
 
 // Les signes non comptabilisés ne doivent pas créer de valeur.
 assert.equal(calc('محمد!').total,92);
-console.log('OK — 13 contrôles Abjad : valeurs, éléments, shadda, normalisation, PM+2049 et réduction.');
+
+const expectedValues = {ا:1,ب:2,ج:3,د:4,ه:5,و:6,ز:7,ح:8,ط:9,ي:10,ك:20,ل:30,م:40,ن:50,ص:60,ع:70,ف:80,ض:90,ق:100,ر:200,س:300,ت:400,ث:500,خ:600,ذ:700,ظ:800,غ:900,ش:1000};
+assert.deepEqual(ABJAD, expectedValues);
+const allLetters = calc(Object.keys(ABJAD).join(''));
+assert.equal(allLetters.total, Object.values(ABJAD).reduce((a,b)=>a+b,0));
+assert.equal(Object.values(allLetters.by).reduce((a,b)=>a+b,0), allLetters.total);
+
+console.log('OK — contrôles Abjad : 28 valeurs, répartition élémentaire, shadda, normalisation, PM+2049 et réduction.');
