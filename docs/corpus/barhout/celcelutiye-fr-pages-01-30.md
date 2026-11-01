@@ -207,3 +207,34 @@ Tu ne craindras aucun serpent, tu ne verras aucun scorpion et aucun lion ne vien
 - Les pages PDF **31 à 34 ne sont pas incluses dans cette livraison**.
 - Les passages signalés comme incertains doivent être relus avec un spécialiste du turc ottoman / de la terminologie religieuse avant une édition définitive.
 - Le texte original du PDF doit rester conservé à côté de cette traduction ; ce fichier français ne le remplace pas.
+
+
+## Page PDF 31
+Ne crains ni l'épée, ni la blessure d'un poignard, ni une lance, ni le mal et le danger qui se sont répandus partout !
+
+## Page PDF 32
+Que la récompense de celui qui récite ce texte soit l'intercession de Muhammad (que la paix et les bénédictions soient sur lui). Qu'il soit rassemblé au Paradis avec les houris disposées en rangs.
+
+Sache que Muhammad Mustafa (que la paix et les bénédictions soient sur lui) est le plus éminent des prophètes et le plus noble des serviteurs de Dieu répandus sur la terre.
+
+## Page PDF 33
+En raison de son rang sublime, mentionne-le au début de chacun de tes souhaits et prends-le comme intercesseur, afin d'être délivré de l'injustice et de la transgression.
+
+Ô mon Dieu ! Accorde Tes bénédictions, chaque jour, à chaque instant et chaque fois que souffle le vent, à cet élu, Mustafa.
+
+Accorde Tes bénédictions à Muhammad l'Élu (que la paix et les bénédictions soient sur lui) et à toute sa famille, aussi nombreuses que les plantes de la terre et que les vents qui souffleront jusqu'au Jour de la Résurrection.
+
+## Page PDF 34
+Accorde Tes bénédictions aussi nombreuses que les pluies qui tombent des nuages accompagnées d'éclairs étincelants, et en quantité suffisante pour remplir la terre et le ciel !
+
+Il te suffit de savoir que Dieu Lui-même et Ses anges prient sur lui et lui adressent leurs salutations — ce qui manifeste sa grandeur.
+
+Toi aussi, alors, tant que les années et les jours se succèdent et que le soleil continue de répandre sa lumière, prie constamment sur lui en sollicitant son intercession.
+
+Accorde Tes salutations aux purs descendants de Hāshim, aussi nombreuses que les fois où les pèlerins visitent la Kaaba et la saluent !
+
+Ô mon Dieu ! Agrée Abū Bakr et ʿUmar, ʿUthmān et le ferme Haydar (le Lion de Dieu, ʿAlī).
+
+Agrée également toute la famille du Prophète, ses compagnons, les saints, les vertueux et tous ceux qui les suivent.
+
+Ces paroles sont attribuées à ʿAlī, cousin paternel de Muhammad (que la paix et les bénédictions soient sur lui). Elles rassemblent, pour les créatures, l'essence et le secret des sciences.
