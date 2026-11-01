@@ -52,7 +52,6 @@ function Calculator({ onSaved }: { onSaved: () => void }) {
   const [text, setText] = useState('');
   const [history, setHistory] = useState<SavedCalculation[]>([]);
   const [countShaddaAsDouble, setCountShaddaAsDouble] = useState(false);
-  const [showPMPlus2049, setShowPMPlus2049] = useState(false);
   const [showReduction, setShowReduction] = useState(true);
   const normalization = { ...DEFAULT_NORMALIZATION, countShaddaAsDouble };
   const result = useMemo(() => calculateAbjad(text, normalization), [text, countShaddaAsDouble]);
@@ -87,11 +86,6 @@ function Calculator({ onSaved }: { onSaved: () => void }) {
           <Text style={styles.total}>{result.total}</Text>
           <Text style={styles.normalized}>Normalisé : {result.normalized || '—'}</Text>
         </View>
-        <View style={styles.optionRow}>
-          <View style={styles.optionText}><Text style={styles.optionTitle}>Ajouter 2049 au PM</Text><Text style={styles.muted}>Option facultative : PM + 2049</Text></View>
-          <Switch value={showPMPlus2049} onValueChange={setShowPMPlus2049} trackColor={{ false: '#CFC8BA', true: '#6B9A85' }} thumbColor={showPMPlus2049 ? GREEN : '#F7F3E8'} />
-        </View>
-        {showPMPlus2049 && <View style={styles.resultLine}><Text style={styles.resultLabel}>PM + 2049</Text><Text style={styles.resultValue}>{result.pmPlus2049}</Text></View>}
         <View style={styles.optionRow}>
           <View style={styles.optionText}><Text style={styles.optionTitle}>Réduction numérique</Text><Text style={styles.muted}>Somme répétée des chiffres jusqu'à un chiffre</Text></View>
           <Switch value={showReduction} onValueChange={setShowReduction} trackColor={{ false: '#CFC8BA', true: '#6B9A85' }} thumbColor={showReduction ? GREEN : '#F7F3E8'} />
