@@ -17,7 +17,12 @@ on:
       - "eas.json"
       - "package.json"
       - "src/**"
+      - "scripts/**"
       - ".github/workflows/android-preview.yml"
+
+concurrency:
+  group: android-preview-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-preview:
