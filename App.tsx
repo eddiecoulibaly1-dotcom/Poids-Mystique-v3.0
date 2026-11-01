@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -50,7 +51,11 @@ function Header({ title, onBack }: { title: string; onBack?: () => void }) {
 function Calculator({ onSaved }: { onSaved: () => void }) {
   const [text, setText] = useState('');
   const [history, setHistory] = useState<SavedCalculation[]>([]);
-  const result = useMemo(() => calculateAbjad(text, DEFAULT_NORMALIZATION), [text]);
+  const [countShaddaAsDouble, setCountShaddaAsDouble] = useState(false);
+  const [showPMPlus2049, setShowPMPlus2049] = useState(false);
+  const [showReduction, setShowReduction] = useState(true);
+  const normalization = { ...DEFAULT_NORMALIZATION, countShaddaAsDouble };
+  const result = useMemo(() => calculateAbjad(text, normalization), [text, countShaddaAsDouble]);
 
   useEffect(() => { loadHistory().then(setHistory).catch(() => undefined); }, []);
 
@@ -81,6 +86,20 @@ function Calculator({ onSaved }: { onSaved: () => void }) {
           <Text style={styles.smallLabel}>POIDS ABJAD</Text>
           <Text style={styles.total}>{result.total}</Text>
           <Text style={styles.normalized}>Normalisé : {result.normalized || '—'}</Text>
+        </View>
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}><Text style={styles.optionTitle}>Ajouter 2049 au PM</Text><Text style={styles.muted}>Option facultative : PM + 2049</Text></View>
+          <Switch value={showPMPlus2049} onValueChange={setShowPMPlus2049} trackColor={{ false: '#CFC8BA', true: '#6B9A85' }} thumbColor={showPMPlus2049 ? GREEN : '#F7F3E8'} />
+        </View>
+        {showPMPlus2049 && <View style={styles.resultLine}><Text style={styles.resultLabel}>PM + 2049</Text><Text style={styles.resultValue}>{result.pmPlus2049}</Text></View>}
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}><Text style={styles.optionTitle}>Réduction numérique</Text><Text style={styles.muted}>Somme répétée des chiffres jusqu'à un chiffre</Text></View>
+          <Switch value={showReduction} onValueChange={setShowReduction} trackColor={{ false: '#CFC8BA', true: '#6B9A85' }} thumbColor={showReduction ? GREEN : '#F7F3E8'} />
+        </View>
+        {showReduction && <View style={styles.resultLine}><Text style={styles.resultLabel}>Réduction du PM</Text><Text style={styles.resultValue}>{result.reduction} <Text style={styles.reductionSteps}>({result.reductionSteps.join(' → ')})</Text></Text></View>}
+        <View style={styles.optionRow}>
+          <View style={styles.optionText}><Text style={styles.optionTitle}>Compter la shadda deux fois</Text><Text style={styles.muted}>Double la valeur de la lettre portant la shadda</Text></View>
+          <Switch value={countShaddaAsDouble} onValueChange={setCountShaddaAsDouble} trackColor={{ false: '#CFC8BA', true: '#6B9A85' }} thumbColor={countShaddaAsDouble ? GREEN : '#F7F3E8'} />
         </View>
         <Pressable onPress={save} style={styles.primary}><Text style={styles.primaryText}>Enregistrer le calcul</Text></Pressable>
       </Card>
@@ -177,6 +196,13 @@ const styles = StyleSheet.create({
   smallLabel: { color: GOLD, fontSize: 11, fontWeight: '800', letterSpacing: 1.4 },
   total: { color: GREEN, fontSize: 42, fontWeight: '800', marginVertical: 2 },
   normalized: { color: '#77766F', fontSize: 12 },
+  optionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#EEE7D9' },
+  optionText: { flex: 1 },
+  optionTitle: { color: GREEN, fontSize: 14, fontWeight: '700' },
+  resultLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
+  resultLabel: { color: TEXT, fontWeight: '700' },
+  resultValue: { color: GREEN, fontSize: 20, fontWeight: '800' },
+  reductionSteps: { color: '#77766F', fontSize: 12, fontWeight: '400' },
   primary: { marginTop: 14, backgroundColor: GREEN, borderRadius: 13, paddingVertical: 14, alignItems: 'center' },
   primaryText: { color: '#FFFDF7', fontWeight: '800' },
   cardTitle: { color: GREEN, fontSize: 17, fontWeight: '800', marginBottom: 12 },
