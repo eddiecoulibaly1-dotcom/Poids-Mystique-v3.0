@@ -48,7 +48,6 @@ export type AbjadResult = {
   original: string;
   normalized: string;
   total: number;
-  pmPlus2049: number;
   reduction: number;
   reductionSteps: number[];
   byElement: Record<ElementName, number>;
@@ -111,7 +110,7 @@ export function calculateAbjad(text: string, settings: NormalizationSettings = D
 
   const reduction = reduceNumber(total);
   return {
-    original: text, normalized, total, pmPlus2049: total + 2049,
+    original: text, normalized, total,
     reduction: reduction.value, reductionSteps: reduction.steps,
     byElement, letters, ignored, shaddaCount
   };
