@@ -67,7 +67,15 @@ jobs:
         run: |
           BUILD_ID="$(node -e "const d=require('./eas-build.json'); const all=Array.isArray(d)?d:(d.builds||[d]); const b=all.find(x=>x.id)||all[0]; if(!b?.id) process.exit(2); process.stdout.write(b.id)")"
           mkdir -p artifacts
-          eas build:download --id "$BUILD_ID" --path artifacts/poids-mystique-preview.apk
+          eas build:download --build-id "$BUILD_ID" --non-interactive
+          APK_PATH="$(find . -maxdepth 3 -type f -name '*.apk' -not -path './artifacts/*' -print -quit)"
+          if [ -z "$APK_PATH" ]; then
+            echo "No APK file was produced by EAS build:download."
+            find . -maxdepth 3 -type f -print
+            exit 1
+          fi
+          cp "$APK_PATH" artifacts/poids-mystique-preview.apk
+          test -s artifacts/poids-mystique-preview.apk
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
