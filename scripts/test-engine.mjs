@@ -21,7 +21,7 @@ function calc(text,{countShaddaAsDouble=false,...opts}={}) {
   else if(!/\s/.test(ch)&&!HARAKAT.test(ch)){HARAKAT.lastIndex=0;previous=undefined;} else HARAKAT.lastIndex=0;
  }
  let n=total; while(n>=10)n=String(n).split('').reduce((s,d)=>s+Number(d),0);
- return {total,by,normalized:marked.replaceAll(marker,''),reduction:n,pmPlus2049:total+2049,letters};
+ return {total,by,normalized:marked.replaceAll(marker,''),reduction:n,letters};
 }
 
 // Valeur de référence convenue : محمد = 92, Feu = 80, Eau = 12.
@@ -32,7 +32,6 @@ assert.equal(reference.by.Eau,12);
 assert.equal(reference.by.Terre,0);
 assert.equal(reference.by.Air,0);
 assert.equal(reference.reduction,2);
-assert.equal(reference.pmPlus2049,2141);
 
 // Shadda : option désactivée par défaut, puis doublement explicite de la lettre précédente.
 assert.equal(calc('بّ').total,2);
@@ -56,4 +55,4 @@ const allLetters = calc(Object.keys(ABJAD).join(''));
 assert.equal(allLetters.total, Object.values(ABJAD).reduce((a,b)=>a+b,0));
 assert.equal(Object.values(allLetters.by).reduce((a,b)=>a+b,0), allLetters.total);
 
-console.log('OK — contrôles Abjad : 28 valeurs, répartition élémentaire, shadda, normalisation, PM+2049 et réduction.');
+console.log('OK — contrôles Abjad : 28 valeurs, répartition élémentaire, shadda, normalisation et réduction.');
