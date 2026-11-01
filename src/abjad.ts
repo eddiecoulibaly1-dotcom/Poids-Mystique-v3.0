@@ -71,50 +71,41 @@ export function reduceNumber(value: number): { value: number; steps: number[] } 
 }
 
 export function calculateAbjad(text: string, settings: NormalizationSettings = DEFAULT_NORMALIZATION): AbjadResult {
-  // La shadda est détectée AVANT la suppression des signes vocaliques.
-  // Elle double uniquement la consonne arabe immédiatement précédente.
-  const prepared = text.normalize('NFC');
-  const shaddaPositions = new Set<number>();
-  if (settings.countShaddaAsDouble) {
-    const chars = Array.from(prepared);
-    for (let i = 0; i < chars.length; i++) {
-      if (chars[i] === SHADDA) {
-        for (let j = i - 1; j >= 0; j--) {
-          if (ABJAD_MAGHREBI[chars[j]]) { shaddaPositions.add(j); break; }
-        }
-      }
-    }
-  }
-
-  const normalized = normalizeArabic(prepared, settings);
+  // Marqueur interne : la shadda est capturée avant la suppression des harakât.
+  const marker = '\\uE000';
+  const prepared = text.normalize('NFC').replace(/\\u0651/g, settings.countShaddaAsDouble ? marker : '');
+  const markedNormalized = normalizeArabic(prepared, settings);
+  const normalized = markedNormalized.replaceAll(marker, '');
   const byElement: Record<ElementName, number> = { Feu: 0, Terre: 0, Air: 0, Eau: 0 };
   const letters: LetterCount[] = [];
   const ignored: string[] = [];
   let total = 0;
   let shaddaCount = 0;
+  let previous: LetterCount | undefined;
 
-  // Associer les positions d'origine aux lettres après normalisation, sans compter les harakât.
-  const sourceChars = Array.from(prepared);
-  const normalizedChars = Array.from(normalized);
-  let sourceIndex = 0;
-  for (const ch of normalizedChars) {
-    while (sourceIndex < sourceChars.length && (HARAKAT.test(sourceChars[sourceIndex]) || sourceChars[sourceIndex] === SHADDA)) {
-      HARAKAT.lastIndex = 0;
-      sourceIndex++;
+  for (const ch of Array.from(markedNormalized)) {
+    if (ch === marker) {
+      if (settings.countShaddaAsDouble && previous) {
+        previous.value += ABJAD_MAGHREBI[previous.letter];
+        total += ABJAD_MAGHREBI[previous.letter];
+        byElement[previous.element] += ABJAD_MAGHREBI[previous.letter];
+        shaddaCount++;
+      }
+      continue;
     }
-    const source = sourceChars[sourceIndex];
-    const doubled = !!source && shaddaPositions.has(sourceIndex);
-    sourceIndex++;
     const value = ABJAD_MAGHREBI[ch];
     const element = ELEMENT_OF[ch];
     if (value !== undefined && element) {
-      const multiplier = doubled ? 2 : 1;
-      letters.push({ letter: ch, value: value * multiplier, element });
-      total += value * multiplier;
-      byElement[element] += value * multiplier;
-      if (doubled) shaddaCount++;
-    } else if (!/\s/.test(ch)) {
+      previous = { letter: ch, value, element };
+      letters.push(previous);
+      total += value;
+      byElement[element] += value;
+    } else if (!/\\s/.test(ch) && !HARAKAT.test(ch)) {
+      HARAKAT.lastIndex = 0;
       ignored.push(ch);
+      previous = undefined;
+    } else {
+      HARAKAT.lastIndex = 0;
     }
   }
 
