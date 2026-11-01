@@ -32,6 +32,7 @@ export const DEFAULT_NORMALIZATION: NormalizationSettings = {
 };
 
 const HARAKAT = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+const SHADDA = '\u0651';
 
 export function normalizeArabic(text: string, settings: NormalizationSettings = DEFAULT_NORMALIZATION): string {
   let out = text.normalize('NFC');
@@ -47,34 +48,80 @@ export type AbjadResult = {
   original: string;
   normalized: string;
   total: number;
+  pmPlus2049: number;
+  reduction: number;
+  reductionSteps: number[];
   byElement: Record<ElementName, number>;
   letters: LetterCount[];
   ignored: string[];
+  shaddaCount: number;
 };
 
+export function reduceNumber(value: number): { value: number; steps: number[] } {
+  if (!Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+    throw new RangeError('La réduction exige un entier positif ou nul.');
+  }
+  const steps = [value];
+  let current = value;
+  while (current >= 10) {
+    current = String(current).split('').reduce((sum, digit) => sum + Number(digit), 0);
+    steps.push(current);
+  }
+  return { value: current, steps };
+}
+
 export function calculateAbjad(text: string, settings: NormalizationSettings = DEFAULT_NORMALIZATION): AbjadResult {
-  const normalized = normalizeArabic(text, settings);
+  // La shadda est détectée AVANT la suppression des signes vocaliques.
+  // Elle double uniquement la consonne arabe immédiatement précédente.
+  const prepared = text.normalize('NFC');
+  const shaddaPositions = new Set<number>();
+  if (settings.countShaddaAsDouble) {
+    const chars = Array.from(prepared);
+    for (let i = 0; i < chars.length; i++) {
+      if (chars[i] === SHADDA) {
+        for (let j = i - 1; j >= 0; j--) {
+          if (ABJAD_MAGHREBI[chars[j]]) { shaddaPositions.add(j); break; }
+        }
+      }
+    }
+  }
+
+  const normalized = normalizeArabic(prepared, settings);
   const byElement: Record<ElementName, number> = { Feu: 0, Terre: 0, Air: 0, Eau: 0 };
   const letters: LetterCount[] = [];
   const ignored: string[] = [];
   let total = 0;
+  let shaddaCount = 0;
 
-  for (const ch of normalized) {
+  // Associer les positions d'origine aux lettres après normalisation, sans compter les harakât.
+  const sourceChars = Array.from(prepared);
+  const normalizedChars = Array.from(normalized);
+  let sourceIndex = 0;
+  for (const ch of normalizedChars) {
+    while (sourceIndex < sourceChars.length && (HARAKAT.test(sourceChars[sourceIndex]) || sourceChars[sourceIndex] === SHADDA)) {
+      HARAKAT.lastIndex = 0;
+      sourceIndex++;
+    }
+    const source = sourceChars[sourceIndex];
+    const doubled = !!source && shaddaPositions.has(sourceIndex);
+    sourceIndex++;
     const value = ABJAD_MAGHREBI[ch];
     const element = ELEMENT_OF[ch];
-    if (value && element) {
-      letters.push({ letter: ch, value, element });
-      total += value;
-      byElement[element] += value;
+    if (value !== undefined && element) {
+      const multiplier = doubled ? 2 : 1;
+      letters.push({ letter: ch, value: value * multiplier, element });
+      total += value * multiplier;
+      byElement[element] += value * multiplier;
+      if (doubled) shaddaCount++;
     } else if (!/\s/.test(ch)) {
       ignored.push(ch);
     }
   }
 
-  if (settings.countShaddaAsDouble) {
-    // Shadda is removed by default. This option is intentionally explicit;
-    // it does not alter a letter unless a caller provides a separate doubled-letter rule.
-  }
-
-  return { original: text, normalized, total, byElement, letters, ignored };
+  const reduction = reduceNumber(total);
+  return {
+    original: text, normalized, total, pmPlus2049: total + 2049,
+    reduction: reduction.value, reductionSteps: reduction.steps,
+    byElement, letters, ignored, shaddaCount
+  };
 }
