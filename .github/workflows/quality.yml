@@ -11,7 +11,7 @@ on:
 
 jobs:
   verify:
-    name: TypeScript and Abjad tests
+    name: TypeScript, Abjad and Android bundle
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,3 +26,5 @@ jobs:
         run: npm run typecheck
       - name: Abjad engine tests
         run: npm run test:engine
+      - name: Export Android JavaScript bundle
+        run: npx expo export --platform android
