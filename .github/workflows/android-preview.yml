@@ -6,24 +6,40 @@ on:
       ref:
         description: "Branche à compiler"
         required: true
-        default: "improvement/v0.3-audit"
+        default: "main"
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - "App.tsx"
+      - "app.json"
+      - "eas.json"
+      - "package.json"
+      - "src/**"
+      - ".github/workflows/android-preview.yml"
 
 jobs:
   build-preview:
-    name: Build Android preview APK
+    name: Verify and build Android preview APK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout selected branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || github.ref_name }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Abjad engine tests
+        run: npm run test:engine
+      - name: Export Android JavaScript bundle
+        run: npx expo export --platform android
       - name: Install EAS CLI
         run: npm install --global eas-cli
       - name: Build preview APK with EAS
