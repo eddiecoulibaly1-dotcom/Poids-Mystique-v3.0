@@ -112,13 +112,13 @@ function Corpus({ onBack }: { onBack: () => void }) {
       <View style={styles.bookTabs}>{CORPUS.map(b => <Pressable key={b.id} onPress={() => setSelected(b.id)} style={[styles.bookTab, selected === b.id && styles.bookTabActive]}><Text style={[styles.bookTabText, selected === b.id && styles.bookTabTextActive]}>{b.title}</Text></Pressable>)}</View>
       <Text style={styles.subtitle}>{book.subtitle}</Text>
       <Card>
-        {pageImage ? <Image source={pageImage} style={styles.pageImage} resizeMode="contain" /> : <Text style={styles.muted}>Page indisponible.</Text>}
-        <View style={styles.pageNav}>
+        {pageImage ? <Image source={pageImage} style={styles.pageImage} resizeMode="contain" /> : <View style={styles.missingBook}><Text style={styles.missingBookTitle}>{book.available ? 'Page non disponible' : 'Document à intégrer'}</Text><Text style={styles.muted}>{book.source}</Text>{book.pages ? <Text style={styles.muted}>{book.pages} pages identifiées, en attente de transfert dans cette application.</Text> : null}</View>}
+        {book.available ? <><View style={styles.pageNav}>
           <Pressable disabled={page <= 1} onPress={() => setPage(p => Math.max(1, p - 1))} style={[styles.navButton, page <= 1 && styles.disabled]}><Text style={styles.navText}>‹</Text></Pressable>
           <Text style={styles.pageNumber}>Page {page} / {book.pages}</Text>
           <Pressable disabled={page >= (book.pages ?? 1)} onPress={() => setPage(p => Math.min(book.pages ?? p, p + 1))} style={[styles.navButton, page >= (book.pages ?? 1) && styles.disabled]}><Text style={styles.navText}>›</Text></Pressable>
         </View>
-        <TextInput value={String(page)} onChangeText={v => { const n = Number(v.replace(/\D/g, '')); if (n >= 1 && n <= (book.pages ?? 1)) setPage(n); }} keyboardType="number-pad" style={styles.pageInput} />
+        <TextInput value={String(page)} onChangeText={v => { const n = Number(v.replace(/\D/g, '')); if (n >= 1 && n <= (book.pages ?? 1)) setPage(n); }} keyboardType="number-pad" style={styles.pageInput} /></> : null}
       </Card>
       <Card>
         <Text style={styles.cardTitle}>Traduction française</Text>
