@@ -12,7 +12,7 @@ Aucune valeur d'Abjad mashriqi/oriental n'est utilisée.
 - Livre Barhout — 34 pages
 - Les Noms Idrīsiyya — 66 pages
 
-Les pages sont embarquées sous `src/asset/corpus/` et référencées exclusivement depuis `src/asset/corpusPages.ts`. Il n'existe volontairement aucun chemin `src/asset/assets/...`.
+Les pages sont embarquées sous `src/asset/corpus/` et référencées exclusivement depuis `src/asset/corpusPages.ts`.
 
 ## Traductions françaises
 
@@ -26,8 +26,12 @@ npm run typecheck
 npm run test:engine
 ```
 
-Build Android preview :
+Les tests importent et exécutent directement `src/abjad.ts` après transpilation TypeScript. Ils ne maintiennent plus une copie indépendante de la table Abjad.
+
+## Build Android preview
 
 ```bash
 eas build --platform android --profile preview
 ```
+
+Les corrections préparatoires sont développées sur `improvement/v0.3-audit`. La branche `main` reste inchangée jusqu'à validation.
